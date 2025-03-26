@@ -1,0 +1,33 @@
+services:
+  api:
+    container_name: kovix-api
+    build:
+      context: .
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - minio
+
+  mongo:
+    container_name: kovix-mongo
+    image: mongo:latest
+    expose:
+      - '27017'
+    volumes:
+      - .docker/mongo:/data/db
+
+  minio:
+    container_name: kovix-minio
+    image: minio/minio:latest
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - .docker/minio:/data
+    command: server /data --console-address ":9001"
