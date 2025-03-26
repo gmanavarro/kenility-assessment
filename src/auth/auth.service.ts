@@ -1,32 +1,27 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
-import { Model } from 'mongoose';
-import { User, UserDocument } from '../users/user.schema';
+import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
   async register(registerDto: RegisterDto) {
     const { username, password } = registerDto;
 
-    const existingUser = await this.userModel.findOne({ username });
+    const existingUser = await this.usersService.findByUsername(username);
     if (existingUser) {
       throw new BadRequestException('Username already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.userModel.create({
-      username,
-      password: hashedPassword,
-    });
+    const user = await this.usersService.create(username, hashedPassword);
 
     const token = this.jwtService.sign({
       username: user.username,
@@ -37,7 +32,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { username, password } = loginDto;
-    const user = await this.userModel.findOne({ username });
+    const user = await this.usersService.findByUsername(username);
 
     if (!user) {
       throw new BadRequestException('Invalid credentials');
@@ -49,7 +44,6 @@ export class AuthService {
     }
 
     const token = this.jwtService.sign({
-      username: user.username,
       sub: user._id,
     });
     return { token };
