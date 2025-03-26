@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import {
@@ -19,10 +19,10 @@ import { StorageModule } from './storage/storage.module';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('database.uri'),
+      useFactory: (config: ConfigType<typeof databaseConfig>) => ({
+        uri: config.uri,
       }),
-      inject: [ConfigService],
+      inject: [databaseConfig.KEY],
     }),
     AuthModule,
     ProductsModule,

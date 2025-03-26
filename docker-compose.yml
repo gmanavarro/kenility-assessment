@@ -1,6 +1,6 @@
 services:
   api:
-    container_name: kovix-api
+    container_name: kenility-api
     build:
       context: .
     restart: always
@@ -13,7 +13,7 @@ services:
       - minio
 
   mongo:
-    container_name: kovix-mongo
+    container_name: kenility-mongo
     image: mongo:latest
     expose:
       - '27017'
@@ -23,7 +23,7 @@ services:
       - .docker/mongo:/data/db
 
   minio:
-    container_name: kovix-minio
+    container_name: kenility-minio
     image: minio/minio:latest
     ports:
       - '9000:9000'

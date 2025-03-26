@@ -1,0 +1,16 @@
+### Create a new product
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "sku": "TEST-001",
+  "pictureUrl": "https://example.com/test-product.jpg",
+  "price": 99.99
+}
+
+### Get all products
+GET http://localhost:3000/products
+
+### Get product by ID
+GET http://localhost:3000/products/65f2e5b3c4d6e7f8a9b0c1d2e 
