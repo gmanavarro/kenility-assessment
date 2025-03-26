@@ -9,8 +9,11 @@
 ## Running the app
 
 ```bash
-# Using docker compose
+# Start containers
 pnpm docker:up
+
+# Create MinIO public bucket for image storage
+pnpm docker:setup
 ```
 
 ## Test

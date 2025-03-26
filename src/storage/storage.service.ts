@@ -25,6 +25,7 @@ export class StorageService {
         secretAccessKey: secretKey,
       },
       endpoint,
+      forcePathStyle: !!endpoint,
     };
 
     this.client = new S3Client(clientConfig);
@@ -35,19 +36,24 @@ export class StorageService {
     const extension = file.originalname.split('.').pop();
     const filename = `${randomUUID()}.${extension}`;
 
-    await this.client.send(
-      new PutObjectCommand({
-        Bucket: bucket,
-        Key: filename,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      }),
-    );
+    try {
+      await this.client.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: filename,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        }),
+      );
 
-    if (endpoint) {
-      return `${endpoint}/${bucket}/${filename}`;
+      if (endpoint) {
+        return `${endpoint}/${bucket}/${filename}`;
+      }
+
+      return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
     }
-
-    return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`;
   }
 }
