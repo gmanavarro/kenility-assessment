@@ -1,0 +1,17 @@
+// Register a new user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123"
+}
+
+// Login with user credentials
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser", 
+  "password": "testpass123"
+}

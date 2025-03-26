@@ -96,3 +96,48 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# Kovix Assessment
+
+## Prerequisites
+
+- Node.js (v20 or later)
+- pnpm
+- Docker and Docker Compose
+- MongoDB (running in Docker)
+
+## Installation
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start MongoDB and MinIO
+docker-compose up -d mongodb minio
+```
+
+## Running the app
+
+```bash
+# Development
+pnpm run start:dev
+
+# Production mode
+pnpm run build
+pnpm run start:prod
+```
+
+## Test
+
+```bash
+# Unit tests
+pnpm run test
+
+# e2e tests
+pnpm run test:e2e
+
+# Test coverage
+pnpm run test:cov
+```
+
+Note: For running e2e tests, make sure MongoDB is running in Docker. The tests will use the database specified in the `MONGODB_URI` environment variable or default to `mongodb://localhost:27017/kovix-test`.

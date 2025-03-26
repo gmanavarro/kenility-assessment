@@ -3,6 +3,7 @@ services:
     container_name: kovix-api
     build:
       context: .
+    restart: always
     ports:
       - '3000:3000'
     env_file:
@@ -16,6 +17,8 @@ services:
     image: mongo:latest
     expose:
       - '27017'
+    ports:
+      - '27017:27017'
     volumes:
       - .docker/mongo:/data/db
 
