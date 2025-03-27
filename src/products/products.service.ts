@@ -16,15 +16,17 @@ export class ProductsService {
   async create(
     createProductDto: CreateProductDto,
     image: Express.Multer.File,
+    userId: string,
   ): Promise<ProductDocument> {
     const pictureUrl = await this.storageService.uploadFile(image);
 
-    const createdProduct = new this.productModel({
+    const product = new this.productModel({
       ...createProductDto,
       pictureUrl,
+      createdBy: userId,
     });
 
-    return createdProduct.save();
+    return product.save();
   }
 
   async findAll(): Promise<ProductDocument[]> {

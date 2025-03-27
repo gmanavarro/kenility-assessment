@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProductsService } from '../products/products.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, OrderDocument } from './order.schema';
 
 @Injectable()
@@ -50,12 +51,56 @@ export class OrdersService {
   }
 
   async findById(id: string): Promise<OrderDocument> {
-    const order = await this.orderModel.findById({ _id: id });
+    const order = await this.orderModel.findById(id);
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    return order;
+  }
 
+  async update(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+  ): Promise<OrderDocument> {
+    const order = await this.findById(id);
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    return order;
+    const updateData: Partial<Order> = {};
+
+    if (updateOrderDto.clientName) {
+      updateData.clientName = updateOrderDto.clientName;
+    }
+
+    if (updateOrderDto.items) {
+      const items = await Promise.all(
+        updateOrderDto.items.map(async (item) => {
+          const product = await this.productsService.findOne(item.productId);
+          return {
+            productId: product._id.toString(),
+            name: product.name,
+            sku: product.sku,
+            price: product.price,
+            pictureUrl: product.pictureUrl,
+            quantity: item.quantity,
+          };
+        }),
+      );
+
+      const total = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+
+      updateData.items = items;
+      updateData.total = total;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await this.orderModel.updateOne({ _id: id }, updateData);
+    }
+
+    return this.findById(id);
   }
 }

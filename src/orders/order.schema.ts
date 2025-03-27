@@ -38,13 +38,6 @@ export class Order {
 
   @Prop({ required: true })
   total: number;
-
-  @Prop({
-    required: true,
-    enum: ['pending', 'completed', 'cancelled'],
-    default: 'pending',
-  })
-  status: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

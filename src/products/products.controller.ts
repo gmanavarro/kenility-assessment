@@ -9,6 +9,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthContext } from '../auth/auth.types';
+import { AuthenticationContext } from '../auth/decorators/user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ImageValidatorInterceptor } from './interceptors/image-validator.interceptor';
@@ -24,8 +26,9 @@ export class ProductsController {
   async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() image: Express.Multer.File,
+    @AuthenticationContext() ctx: AuthContext,
   ) {
-    return this.productsService.create(createProductDto, image);
+    return this.productsService.create(createProductDto, image, ctx.userId);
   }
 
   @Get()
