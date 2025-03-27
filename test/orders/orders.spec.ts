@@ -9,12 +9,19 @@ describe('Orders', () => {
   let app: INestApplication;
   let dbConnection: Connection;
   let authToken: string;
-  let productId: string;
+  let productId1: string;
+  let productId2: string;
 
-  const testProduct = {
-    name: 'Test Product',
+  const testProduct1 = {
+    name: 'Test Product 1',
     sku: 'TEST-123',
     price: 99.99,
+  };
+
+  const testProduct2 = {
+    name: 'Test Product 2',
+    sku: 'TEST-456',
+    price: 149.99,
   };
 
   beforeAll(async () => {
@@ -45,15 +52,25 @@ describe('Orders', () => {
 
     authToken = loginResponse.body.token;
 
-    const createProductResponse = await request(app.getHttpServer())
+    const createProduct1Response = await request(app.getHttpServer())
       .post('/products')
       .set('Authorization', `Bearer ${authToken}`)
-      .field('name', testProduct.name)
-      .field('sku', testProduct.sku)
-      .field('price', testProduct.price)
+      .field('name', testProduct1.name)
+      .field('sku', testProduct1.sku)
+      .field('price', testProduct1.price)
       .attach('image', 'test/products/metalpipe.jpeg');
 
-    productId = createProductResponse.body._id;
+    productId1 = createProduct1Response.body._id;
+
+    const createProduct2Response = await request(app.getHttpServer())
+      .post('/products')
+      .set('Authorization', `Bearer ${authToken}`)
+      .field('name', testProduct2.name)
+      .field('sku', testProduct2.sku)
+      .field('price', testProduct2.price)
+      .attach('image', 'test/products/metalpipe.jpeg');
+
+    productId2 = createProduct2Response.body._id;
   });
 
   afterAll(async () => {
@@ -73,8 +90,8 @@ describe('Orders', () => {
       ],
     };
 
-    beforeEach(() => {
-      testOrder.items[0].productId = productId;
+    beforeEach(async () => {
+      testOrder.items[0].productId = productId1;
     });
 
     it('should create a new order', () => {
@@ -87,15 +104,58 @@ describe('Orders', () => {
           expect(res.body).toHaveProperty('_id');
           expect(res.body.clientName).toBe(testOrder.clientName);
           expect(res.body.items).toHaveLength(1);
-          expect(res.body.items[0].productId).toBe(productId);
+          expect(res.body.items[0].productId).toBe(productId1);
           expect(res.body.items[0].quantity).toBe(testOrder.items[0].quantity);
           expect(res.body.items[0]).toHaveProperty('name');
           expect(res.body.items[0]).toHaveProperty('sku');
           expect(res.body.items[0]).toHaveProperty('price');
           expect(res.body.items[0]).toHaveProperty('imageUrl');
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(testProduct.price * 2);
+          expect(res.body.total).toBe(testProduct1.price * 2);
           expect(res.body).toHaveProperty('createdBy');
+        });
+    });
+
+    it('should create an order with multiple items', () => {
+      const orderWithMultipleItems = {
+        clientName: 'John Doe',
+        items: [
+          {
+            productId: productId1,
+            quantity: 2,
+          },
+          {
+            productId: productId2,
+            quantity: 3,
+          },
+        ],
+      };
+
+      return request(app.getHttpServer())
+        .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(orderWithMultipleItems)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('_id');
+          expect(res.body.clientName).toBe(orderWithMultipleItems.clientName);
+          expect(res.body.items).toHaveLength(2);
+          expect(res.body.items[0].productId).toBe(productId1);
+          expect(res.body.items[0].quantity).toBe(
+            orderWithMultipleItems.items[0].quantity,
+          );
+          expect(res.body.items[0].name).toBe(testProduct1.name);
+          expect(res.body.items[0].sku).toBe(testProduct1.sku);
+          expect(res.body.items[0].price).toBe(testProduct1.price);
+          expect(res.body.items[1].productId).toBe(productId2);
+          expect(res.body.items[1].quantity).toBe(
+            orderWithMultipleItems.items[1].quantity,
+          );
+          expect(res.body.items[1].name).toBe(testProduct2.name);
+          expect(res.body.items[1].sku).toBe(testProduct2.sku);
+          expect(res.body.items[1].price).toBe(testProduct2.price);
+          const expectedTotal = testProduct1.price * 2 + testProduct2.price * 3;
+          expect(res.body.total).toBe(expectedTotal);
         });
     });
 
@@ -153,7 +213,7 @@ describe('Orders', () => {
         ...testOrder,
         items: [
           {
-            productId: productId,
+            productId: productId1,
             quantity: 0,
           },
         ],
@@ -173,7 +233,7 @@ describe('Orders', () => {
         clientName: 'John Doe',
         items: [
           {
-            productId: productId,
+            productId: productId1,
             quantity: 2,
           },
         ],
@@ -192,10 +252,10 @@ describe('Orders', () => {
           expect(res.body._id).toBe(createResponse.body._id);
           expect(res.body.clientName).toBe(testOrder.clientName);
           expect(res.body.items).toHaveLength(1);
-          expect(res.body.items[0].productId).toBe(productId);
+          expect(res.body.items[0].productId).toBe(productId1);
           expect(res.body.items[0].quantity).toBe(testOrder.items[0].quantity);
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(testProduct.price * 2);
+          expect(res.body.total).toBe(testProduct1.price * 2);
         });
     });
 
@@ -216,7 +276,7 @@ describe('Orders', () => {
         clientName: 'John Doe',
         items: [
           {
-            productId: productId,
+            productId: productId1,
             quantity: 2,
           },
         ],
@@ -235,7 +295,7 @@ describe('Orders', () => {
         clientName: 'Jane Doe',
         items: [
           {
-            productId: productId,
+            productId: productId1,
             quantity: 3,
           },
         ],
@@ -250,10 +310,88 @@ describe('Orders', () => {
           expect(res.body._id).toBe(orderId);
           expect(res.body.clientName).toBe(updateData.clientName);
           expect(res.body.items).toHaveLength(1);
-          expect(res.body.items[0].productId).toBe(productId);
+          expect(res.body.items[0].productId).toBe(productId1);
           expect(res.body.items[0].quantity).toBe(updateData.items[0].quantity);
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(testProduct.price * 3);
+          expect(res.body.total).toBe(testProduct1.price * 3);
+        });
+    });
+
+    it('should update an order by adding multiple items', () => {
+      const updateData = {
+        clientName: 'Jane Doe',
+        items: [
+          {
+            productId: productId1,
+            quantity: 2,
+          },
+          {
+            productId: productId2,
+            quantity: 3,
+          },
+        ],
+      };
+
+      return request(app.getHttpServer())
+        .patch(`/orders/${orderId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body._id).toBe(orderId);
+          expect(res.body.clientName).toBe(updateData.clientName);
+          expect(res.body.items).toHaveLength(2);
+          expect(res.body.items[0].productId).toBe(productId1);
+          expect(res.body.items[0].quantity).toBe(updateData.items[0].quantity);
+          expect(res.body.items[0].name).toBe(testProduct1.name);
+          expect(res.body.items[0].sku).toBe(testProduct1.sku);
+          expect(res.body.items[0].price).toBe(testProduct1.price);
+          expect(res.body.items[1].productId).toBe(productId2);
+          expect(res.body.items[1].quantity).toBe(updateData.items[1].quantity);
+          expect(res.body.items[1].name).toBe(testProduct2.name);
+          expect(res.body.items[1].sku).toBe(testProduct2.sku);
+          expect(res.body.items[1].price).toBe(testProduct2.price);
+          const expectedTotal = testProduct1.price * 2 + testProduct2.price * 3;
+          expect(res.body.total).toBe(expectedTotal);
+        });
+    });
+
+    it('should update an order by removing items', () => {
+      const initialOrder = {
+        clientName: 'John Doe',
+        items: [
+          {
+            productId: productId1,
+            quantity: 2,
+          },
+          {
+            productId: productId2,
+            quantity: 3,
+          },
+        ],
+      };
+
+      const updateData = {
+        items: [
+          {
+            productId: productId1,
+            quantity: 1,
+          },
+        ],
+      };
+
+      return request(app.getHttpServer())
+        .patch(`/orders/${orderId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body._id).toBe(orderId);
+          expect(res.body.items).toHaveLength(1);
+          expect(res.body.items[0].productId).toBe(productId1);
+          expect(res.body.items[0].quantity).toBe(updateData.items[0].quantity);
+          const expectedTotal = testProduct1.price * 1;
+          expect(res.body.total).toBe(expectedTotal);
         });
     });
 
@@ -298,11 +436,11 @@ describe('Orders', () => {
       const testOrders = [
         {
           clientName: 'John Doe',
-          items: [{ productId, quantity: 2 }],
+          items: [{ productId: productId1, quantity: 2 }],
         },
         {
           clientName: 'Jane Doe',
-          items: [{ productId, quantity: 1 }],
+          items: [{ productId: productId1, quantity: 1 }],
         },
       ];
 
