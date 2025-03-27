@@ -4,24 +4,12 @@ import { User } from '../users/user.schema';
 
 export type OrderDocument = Order & Document<MongooseSchema.Types.ObjectId>;
 
-@Schema({ timestamps: true })
-export class OrderItem {
-  @Prop({ required: true })
+class OrderItem {
   productId: string;
-
-  @Prop({ required: true })
   name: string;
-
-  @Prop({ required: true })
   sku: string;
-
-  @Prop({ required: true })
   price: number;
-
-  @Prop({ required: true })
   imageUrl: string;
-
-  @Prop({ required: true, min: 1 })
   quantity: number;
 }
 

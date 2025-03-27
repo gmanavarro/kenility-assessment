@@ -102,15 +102,18 @@ export class OrdersService {
   }
 
   async getLastMonthTotal(): Promise<number> {
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const now = new Date();
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
     const orders = await this.orderModel
       .find({
-        createdAt: { $gte: lastMonth },
+        createdAt: {
+          $gte: startOfLastMonth,
+          $lte: endOfLastMonth,
+        },
       })
       .select('total')
-      .lean()
       .exec();
 
     return orders.reduce((sum, order) => sum + order.total, 0);
@@ -120,7 +123,6 @@ export class OrdersService {
     const order = await this.orderModel
       .findOne()
       .sort({ total: 'desc' })
-      .lean()
       .exec();
 
     if (!order) {
@@ -128,5 +130,9 @@ export class OrdersService {
     }
 
     return order;
+  }
+
+  async findAll(): Promise<OrderDocument[]> {
+    return this.orderModel.find().sort({ createdAt: -1 }).exec();
   }
 }

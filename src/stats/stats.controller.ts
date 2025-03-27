@@ -21,9 +21,10 @@ export class StatsController {
   @ApiResponse({
     status: 200,
     description: 'Returns the total sales amount for the last month',
+    type: Number,
   })
   async getLastMonthTotal() {
-    return this.statsService.getLastMonthTotal();
+    return { total: await this.statsService.getLastMonthTotal() };
   }
 
   @Get('highest-order')

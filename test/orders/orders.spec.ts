@@ -11,6 +11,12 @@ describe('Orders', () => {
   let authToken: string;
   let productId: string;
 
+  const testProduct = {
+    name: 'Test Product',
+    sku: 'TEST-123',
+    price: 99.99,
+  };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -26,7 +32,6 @@ describe('Orders', () => {
   beforeEach(async () => {
     await dbConnection.dropDatabase();
 
-    // Register and login a test user to get the auth token
     const testUser = {
       username: 'testuser',
       password: 'Test123!',
@@ -39,13 +44,6 @@ describe('Orders', () => {
       .send(testUser);
 
     authToken = loginResponse.body.token;
-
-    // Create a test product to use in orders
-    const testProduct = {
-      name: 'Test Product',
-      sku: 'TEST-123',
-      price: 99.99,
-    };
 
     const createProductResponse = await request(app.getHttpServer())
       .post('/products')
@@ -96,7 +94,7 @@ describe('Orders', () => {
           expect(res.body.items[0]).toHaveProperty('price');
           expect(res.body.items[0]).toHaveProperty('imageUrl');
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(99.99 * 2); // price * quantity
+          expect(res.body.total).toBe(testProduct.price * 2);
           expect(res.body).toHaveProperty('createdBy');
         });
     });
@@ -132,7 +130,7 @@ describe('Orders', () => {
         ...testOrder,
         items: [
           {
-            productId: new Types.ObjectId().toString(), // Valid MongoDB ID that doesn't exist
+            productId: new Types.ObjectId().toString(),
             quantity: 1,
           },
         ],
@@ -197,7 +195,7 @@ describe('Orders', () => {
           expect(res.body.items[0].productId).toBe(productId);
           expect(res.body.items[0].quantity).toBe(testOrder.items[0].quantity);
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(99.99 * 2); // price * quantity
+          expect(res.body.total).toBe(testProduct.price * 2);
         });
     });
 
@@ -255,7 +253,7 @@ describe('Orders', () => {
           expect(res.body.items[0].productId).toBe(productId);
           expect(res.body.items[0].quantity).toBe(updateData.items[0].quantity);
           expect(res.body).toHaveProperty('total');
-          expect(res.body.total).toBe(99.99 * 3); // price * new quantity
+          expect(res.body.total).toBe(testProduct.price * 3);
         });
     });
 
@@ -263,7 +261,7 @@ describe('Orders', () => {
       const updateData = {
         items: [
           {
-            productId: new Types.ObjectId().toString(), // Valid MongoDB ID that doesn't exist
+            productId: new Types.ObjectId().toString(),
             quantity: 1,
           },
         ],
@@ -292,6 +290,48 @@ describe('Orders', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send(invalidUpdateData)
         .expect(400);
+    });
+  });
+
+  describe('/orders (GET)', () => {
+    beforeEach(async () => {
+      const testOrders = [
+        {
+          clientName: 'John Doe',
+          items: [{ productId, quantity: 2 }],
+        },
+        {
+          clientName: 'Jane Doe',
+          items: [{ productId, quantity: 1 }],
+        },
+      ];
+
+      for (const order of testOrders) {
+        await request(app.getHttpServer())
+          .post('/orders')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send(order);
+      }
+    });
+
+    it('should return all orders', () => {
+      return request(app.getHttpServer())
+        .get('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body).toHaveLength(2);
+          expect(res.body[0]).toHaveProperty('_id');
+          expect(res.body[0]).toHaveProperty('clientName');
+          expect(res.body[0]).toHaveProperty('items');
+          expect(res.body[0]).toHaveProperty('total');
+          expect(res.body[0]).toHaveProperty('createdBy');
+        });
+    });
+
+    it('should not allow access without authentication', () => {
+      return request(app.getHttpServer()).get('/orders').expect(401);
     });
   });
 });

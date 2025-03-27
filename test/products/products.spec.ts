@@ -26,7 +26,6 @@ describe('Products', () => {
   beforeEach(async () => {
     await dbConnection.dropDatabase();
 
-    // Register and login a test user to get the auth token
     const testUser = {
       username: 'testuser',
       password: 'Test123!',
@@ -94,8 +93,8 @@ describe('Products', () => {
         .expect((res) => {
           expect(res.body.message).toEqual([
             'name should not be empty',
-            'sku should not be empty',
             'price must not be less than 0',
+            'sku should not be empty',
           ]);
         });
     });
@@ -148,7 +147,7 @@ describe('Products', () => {
         .field('sku', testProduct.sku)
         .field('price', 199.99)
         .attach('image', testImagePath)
-        .expect(400)
+        .expect(409)
         .expect((res) => {
           expect(res.body.message).toBe('SKU already exists');
         });
@@ -191,6 +190,54 @@ describe('Products', () => {
         .get(`/products/${nonExistentId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
+    });
+  });
+
+  describe('/products (GET)', () => {
+    beforeEach(async () => {
+      const testProducts = [
+        {
+          name: 'Test Product 1',
+          sku: 'TEST-123',
+          price: 99.99,
+        },
+        {
+          name: 'Test Product 2',
+          sku: 'TEST-456',
+          price: 149.99,
+        },
+      ];
+
+      for (const product of testProducts) {
+        await request(app.getHttpServer())
+          .post('/products')
+          .set('Authorization', `Bearer ${authToken}`)
+          .field('name', product.name)
+          .field('sku', product.sku)
+          .field('price', product.price)
+          .attach('image', path.join(__dirname, 'metalpipe.jpeg'));
+      }
+    });
+
+    it('should return all products', () => {
+      return request(app.getHttpServer())
+        .get('/products')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200)
+        .expect((res) => {
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body).toHaveLength(2);
+          expect(res.body[0]).toHaveProperty('_id');
+          expect(res.body[0]).toHaveProperty('name');
+          expect(res.body[0]).toHaveProperty('sku');
+          expect(res.body[0]).toHaveProperty('price');
+          expect(res.body[0]).toHaveProperty('imageUrl');
+          expect(res.body[0]).toHaveProperty('createdBy');
+        });
+    });
+
+    it('should not allow access without authentication', () => {
+      return request(app.getHttpServer()).get('/products').expect(401);
     });
   });
 });

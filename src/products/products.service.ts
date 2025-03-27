@@ -47,4 +47,8 @@ export class ProductsService {
     }
     return product;
   }
+
+  async findAll(): Promise<ProductDocument[]> {
+    return this.productModel.find().sort({ createdAt: -1 }).exec();
+  }
 }

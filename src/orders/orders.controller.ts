@@ -40,6 +40,13 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, ctx.userId);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Get all orders' })
+  @ApiResponse({ status: 200, description: 'Returns all orders' })
+  findAll() {
+    return this.ordersService.findAll();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get an order by id' })
   @ApiResponse({ status: 200, description: 'Returns the order' })

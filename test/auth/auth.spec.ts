@@ -58,7 +58,7 @@ describe('Auth', () => {
       return request(app.getHttpServer())
         .post('/auth/register')
         .send(testUser)
-        .expect(400)
+        .expect(409)
         .expect((res) => {
           expect(res.body.message).toBe('Username already exists');
         });

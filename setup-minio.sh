@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Check if MinIO container is running
 if ! docker ps | grep -q kenility-minio; then
     echo "MinIO container is not running. Check readme for instructions."
     exit 1

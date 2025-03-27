@@ -69,6 +69,13 @@ export class ProductsController {
     return this.productsService.create(createProductDto, image, ctx.userId);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({ status: 200, description: 'Returns all products' })
+  findAll() {
+    return this.productsService.findAll();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a product by id' })
   @ApiResponse({ status: 200, description: 'Returns the product' })
