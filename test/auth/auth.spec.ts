@@ -34,7 +34,7 @@ describe('Auth', () => {
   describe('/auth/register (POST)', () => {
     const testUser = {
       username: 'testuser',
-      password: 'Test123!',
+      password: 'Test1234',
     };
 
     it('should register a new user', () => {
@@ -68,15 +68,75 @@ describe('Auth', () => {
       return request(app.getHttpServer())
         .post('/auth/register')
         .send({
-          username: 'te',
+          username: 'usr',
           password: 'weak',
         })
         .expect(400)
         .expect((res) => {
           expect(res.body.message).toEqual([
-            'username must be longer than or equal to 3 characters',
-            'password must be longer than or equal to 6 characters',
+            'username must be longer than or equal to 4 characters',
+            'password must be longer than or equal to 8 characters',
           ]);
+        });
+    });
+
+    it('should validate username format', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'user@123',
+          password: 'Test1234',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toEqual([
+            'username must contain only letters and numbers',
+          ]);
+        });
+    });
+
+    it('should validate password format', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'testuser',
+          password: 'Test@123!',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toEqual([
+            'password must contain only letters and numbers',
+          ]);
+        });
+    });
+
+    it('should validate username max length', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'verylongusername',
+          password: 'Test1234',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain(
+            'username must be shorter than or equal to 10 characters',
+          );
+        });
+    });
+
+    it('should validate password max length', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'testuser',
+          password: 'ThisPasswordIsVeryLong1234',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain(
+            'password must be shorter than or equal to 16 characters',
+          );
         });
     });
   });
@@ -84,7 +144,7 @@ describe('Auth', () => {
   describe('/auth/login (POST)', () => {
     const testUser = {
       username: 'testuser',
-      password: 'Test123!',
+      password: 'Test1234',
     };
 
     beforeEach(async () => {
@@ -123,7 +183,7 @@ describe('Auth', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
         .send({
-          username: 'nonexistent',
+          username: 'noexist',
           password: testUser.password,
         })
         .expect(400)
@@ -142,8 +202,10 @@ describe('Auth', () => {
         .expect(400)
         .expect((res) => {
           expect(res.body.message).toEqual([
-            'username should not be empty',
-            'password should not be empty',
+            'username must contain only letters and numbers',
+            'username must be longer than or equal to 4 characters',
+            'password must contain only letters and numbers',
+            'password must be longer than or equal to 8 characters',
           ]);
         });
     });

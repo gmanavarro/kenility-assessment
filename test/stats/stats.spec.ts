@@ -27,7 +27,7 @@ describe('Stats', () => {
 
     const testUser = {
       username: 'testuser',
-      password: 'Test123!',
+      password: 'Test1234',
     };
 
     await request(app.getHttpServer()).post('/auth/register').send(testUser);

@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Esperar a que MinIO esté listo
-until mc alias set myminio http://localhost:9000 minioadmin minioadmin; do
-  echo "Esperando a que MinIO esté disponible..."
-  sleep 1
+echo "Waiting for MinIO container to be ready..."
+while ! docker ps | grep -q kenility-minio; do
+    echo "MinIO container is not running yet. Waiting 1 second..."
+    sleep 1
 done
 
-# Crear el bucket de pruebas si no existe
-mc mb myminio/products-test --ignore-existing
+echo "MinIO container is running. Proceeding with setup..."
 
-# Configurar políticas de acceso público para el bucket de pruebas
-mc anonymous set public myminio/products-test
+echo "Creating bucket..."
+docker exec kenility-minio mc alias set minio http://localhost:9000 minioadmin minioadmin
+docker exec kenility-minio mc mb minio/products --ignore-existing
+docker exec kenility-minio mc anonymous set download minio/products
 
-echo "MinIO configurado exitosamente" 
+echo "MinIO setup completed!"
