@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthContext } from '../auth/auth.types';
-import { AuthenticationContext } from '../auth/decorators/user.decorator';
+import { AuthenticationContext } from '../auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -25,11 +25,6 @@ export class OrdersController {
     @AuthenticationContext() ctx: AuthContext,
   ) {
     return this.ordersService.create(createOrderDto, ctx.userId);
-  }
-
-  @Get()
-  findAll() {
-    return this.ordersService.findAll();
   }
 
   @Get(':id')

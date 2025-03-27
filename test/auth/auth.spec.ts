@@ -5,7 +5,7 @@ import { Connection } from 'mongoose';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
 
-describe('AuthController (e2e)', () => {
+describe('Auth', () => {
   let app: INestApplication;
   let dbConnection: Connection;
 

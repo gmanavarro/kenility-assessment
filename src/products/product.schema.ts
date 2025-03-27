@@ -16,7 +16,7 @@ export class Product {
   sku: string;
 
   @Prop({ required: true })
-  pictureUrl: string;
+  imageUrl: string;
 
   @Prop({ required: true })
   price: number;

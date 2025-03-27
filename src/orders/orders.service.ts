@@ -25,7 +25,7 @@ export class OrdersService {
           name: product.name,
           sku: product.sku,
           price: product.price,
-          pictureUrl: product.pictureUrl,
+          imageUrl: product.imageUrl,
           quantity: item.quantity,
         };
       }),
@@ -46,12 +46,12 @@ export class OrdersService {
     return order.save();
   }
 
-  async findAll(): Promise<OrderDocument[]> {
-    return this.orderModel.find();
+  async findById(id: string): Promise<OrderDocument | null> {
+    return this.orderModel.findById(id);
   }
 
-  async findById(id: string): Promise<OrderDocument> {
-    const order = await this.orderModel.findById(id);
+  async findByIdOrThrow(id: string): Promise<OrderDocument> {
+    const order = await this.findById(id);
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
@@ -62,10 +62,7 @@ export class OrdersService {
     id: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<OrderDocument> {
-    const order = await this.findById(id);
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
+    await this.findByIdOrThrow(id);
 
     const updateData: Partial<Order> = {};
 
@@ -82,7 +79,7 @@ export class OrdersService {
             name: product.name,
             sku: product.sku,
             price: product.price,
-            pictureUrl: product.pictureUrl,
+            imageUrl: product.imageUrl,
             quantity: item.quantity,
           };
         }),
@@ -101,6 +98,6 @@ export class OrdersService {
       await this.orderModel.updateOne({ _id: id }, updateData);
     }
 
-    return this.findById(id);
+    return this.findByIdOrThrow(id);
   }
 }

@@ -19,7 +19,7 @@ export class OrderItem {
   price: number;
 
   @Prop({ required: true })
-  pictureUrl: string;
+  imageUrl: string;
 
   @Prop({ required: true, min: 1 })
   quantity: number;
