@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "docker:up": "docker compose up --build --attach api",
+    "docker:dev": "docker compose up --build --attach api",
+    "docker:up": "docker compose up",
     "docker:down": "docker compose down",
     "setup": "./scripts/setup-minio.sh && ts-node scripts/seed-mongo.ts"
   },

@@ -167,7 +167,7 @@ async function seed() {
   try {
     const testUser = {
       username: 'testuser',
-      password: 'Test123!',
+      password: 'Test1234',
     };
 
     console.log('Registering user...');
