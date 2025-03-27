@@ -8,8 +8,8 @@ const envSchema = z.object({
   STORAGE_ACCESS_KEY: z.string(),
   STORAGE_SECRET_KEY: z.string(),
   STORAGE_BUCKET: z.string(),
-  STORAGE_ENDPOINT: z.string().optional(),
-  STORAGE_REGION: z.string(),
+  STORAGE_ENDPOINT: z.string(),
+  STORAGE_PORT: z.string().transform((val) => parseInt(val, 10)),
 });
 
 const env = envSchema.parse(process.env);
@@ -27,6 +27,6 @@ export const storageConfig = registerAs('storage', () => ({
   accessKey: env.STORAGE_ACCESS_KEY,
   secretKey: env.STORAGE_SECRET_KEY,
   bucket: env.STORAGE_BUCKET,
-  endpoint: env.STORAGE_ENDPOINT,
-  region: env.STORAGE_REGION,
+  endPoint: env.STORAGE_ENDPOINT,
+  port: env.STORAGE_PORT,
 }));
