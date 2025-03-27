@@ -16,7 +16,7 @@ export class ProductsService {
   async create(
     createProductDto: CreateProductDto,
     image: Express.Multer.File,
-  ): Promise<Product> {
+  ): Promise<ProductDocument> {
     const pictureUrl = await this.storageService.uploadFile(image);
 
     const createdProduct = new this.productModel({
@@ -27,11 +27,11 @@ export class ProductsService {
     return createdProduct.save();
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(): Promise<ProductDocument[]> {
     return this.productModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Product> {
+  async findOne(id: string): Promise<ProductDocument> {
     const product = await this.productModel.findById(id).exec();
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);

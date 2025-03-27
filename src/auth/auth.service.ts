@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { JwtPayload } from './auth.types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -25,7 +26,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({
       username: user.username,
-      sub: user._id,
+      sub: user._id.toString(),
     });
     return { token };
   }
@@ -43,9 +44,11 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const token = this.jwtService.sign({
-      sub: user._id,
-    });
+    const tokenPayload: JwtPayload = {
+      sub: user._id.toString(),
+    };
+
+    const token = this.jwtService.sign(tokenPayload);
     return { token };
   }
 }
