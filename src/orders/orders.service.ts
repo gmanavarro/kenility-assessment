@@ -19,7 +19,9 @@ export class OrdersService {
   ): Promise<OrderDocument> {
     const items = await Promise.all(
       createOrderDto.items.map(async (item) => {
-        const product = await this.productsService.findOne(item.productId);
+        const product = await this.productsService.findByIdOrThrow(
+          item.productId,
+        );
         return {
           productId: product._id,
           name: product.name,
@@ -69,7 +71,9 @@ export class OrdersService {
     if (updateOrderDto.items) {
       const items = await Promise.all(
         updateOrderDto.items.map(async (item) => {
-          const product = await this.productsService.findOne(item.productId);
+          const product = await this.productsService.findByIdOrThrow(
+            item.productId,
+          );
           return {
             productId: product._id.toString(),
             name: product.name,
@@ -95,5 +99,34 @@ export class OrdersService {
     }
 
     return this.findByIdOrThrow(id);
+  }
+
+  async getLastMonthTotal(): Promise<number> {
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+    const orders = await this.orderModel
+      .find({
+        createdAt: { $gte: lastMonth },
+      })
+      .select('total')
+      .lean()
+      .exec();
+
+    return orders.reduce((sum, order) => sum + order.total, 0);
+  }
+
+  async getHighestOrder(): Promise<OrderDocument> {
+    const order = await this.orderModel
+      .findOne()
+      .sort({ total: 'desc' })
+      .lean()
+      .exec();
+
+    if (!order) {
+      throw new NotFoundException('No orders found');
+    }
+
+    return order;
   }
 }

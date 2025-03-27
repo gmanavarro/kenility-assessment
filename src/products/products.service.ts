@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,7 +26,7 @@ export class ProductsService {
       sku: createProductDto.sku,
     });
     if (existingProduct) {
-      throw new BadRequestException('SKU already exists');
+      throw new ConflictException('SKU already exists');
     }
 
     const imageUrl = await this.storageService.uploadFile(image);
@@ -40,7 +40,7 @@ export class ProductsService {
     return product.save();
   }
 
-  async findOne(id: string): Promise<ProductDocument> {
+  async findByIdOrThrow(id: string): Promise<ProductDocument> {
     const product = await this.productModel.findById(id).exec();
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
