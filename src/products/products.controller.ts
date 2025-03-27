@@ -12,6 +12,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthContext } from '../auth/auth.types';
 import { AuthenticationContext } from '../auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { MongoIdDto } from '../common/dto/mongo-id.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ImageValidatorInterceptor } from './interceptors/image-validator.interceptor';
 import { ProductsService } from './products.service';
@@ -32,7 +33,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  findOne(@Param() params: MongoIdDto) {
+    return this.productsService.findOne(params.id);
   }
 }

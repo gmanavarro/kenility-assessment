@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, isValidObjectId } from 'mongoose';
+import { Model } from 'mongoose';
 import { StorageService } from '../storage/storage.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product, ProductDocument } from './product.schema';
@@ -41,10 +41,6 @@ export class ProductsService {
   }
 
   async findOne(id: string): Promise<ProductDocument> {
-    if (!isValidObjectId(id)) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
     const product = await this.productModel.findById(id).exec();
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);

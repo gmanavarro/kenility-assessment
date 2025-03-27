@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Connection } from 'mongoose';
+import { Connection, Types } from 'mongoose';
 import * as path from 'path';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
@@ -186,8 +186,9 @@ describe('Products', () => {
     });
 
     it('should return 404 for non-existent product', () => {
+      const nonExistentId = new Types.ObjectId().toString();
       return request(app.getHttpServer())
-        .get('/products/nonexistentid')
+        .get(`/products/${nonExistentId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
     });

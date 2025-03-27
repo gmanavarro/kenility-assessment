@@ -10,6 +10,7 @@ import {
 import { AuthContext } from '../auth/auth.types';
 import { AuthenticationContext } from '../auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { MongoIdDto } from '../common/dto/mongo-id.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrdersService } from './orders.service';
@@ -28,12 +29,12 @@ export class OrdersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findById(id);
+  findOne(@Param() params: MongoIdDto) {
+    return this.ordersService.findByIdOrThrow(params.id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  update(@Param() params: MongoIdDto, @Body() updateOrderDto: UpdateOrderDto) {
+    return this.ordersService.update(params.id, updateOrderDto);
   }
 }

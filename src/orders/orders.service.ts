@@ -46,12 +46,8 @@ export class OrdersService {
     return order.save();
   }
 
-  async findById(id: string): Promise<OrderDocument | null> {
-    return this.orderModel.findById(id);
-  }
-
   async findByIdOrThrow(id: string): Promise<OrderDocument> {
-    const order = await this.findById(id);
+    const order = await this.orderModel.findById(id);
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
